@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>01_背景地図の表示</title>
+    <!-- Reading Leaflet css -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin=""
+    />
+    <!-- Reading Leaflet .js files -->
+    <script
+        src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""
+    ></script>
+</head>
+<body>
+    <!-- Declare a div element to draw a map -->
+    <div id="map" style="height: 99vh;"></div>
+    <script>
+        // initialize the map instance
+        const map = L.map('map', {
+            center:[35.5040536,138.6486297],
+            zoom: 5
+        });
+        
+        // initialize the background map instance(OSM)
+        const backgroudlayerOsm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',  // OSM URL Template
+            {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }
+        );
+        
+        // initialize the background map instance(国土地理院 -GSI- 標準地図)
+        const backgroudlayerGsi = L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',  // GSI std URL Template
+            {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a> contributors'
+            }
+        );
+
+        // add the background layer to the map
+        map.addLayer(backgroudlayerGsi);
+    </script>
+</body>
+</html>

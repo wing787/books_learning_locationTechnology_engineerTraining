@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>03_複数のピンを追加</title>
+    <!-- Reading Leaflet css -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin=""
+    />
+    <!-- Reading Leaflet .js files -->
+    <script
+        src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""
+    ></script>
+</head>
+<body>
+    <!-- Declare a div element to draw a map -->
+    <div id="map" style="height: 99vh;"></div>
+    <script>
+        // Initialize the map instance（初期表示：群馬県）
+        const map = L.map('map', {
+            center:[36.5229228,138.9618555],
+            zoom: 9
+        });
+        // Initialize the background map instance(国土地理院 -GSI- 標準地図)
+        const backgroudLayer = L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',  // GSI std URL Template
+            {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>'
+            }
+        );
+        // Add the background layer to the map
+        map.addLayer(backgroudLayer);
+
+        // Make GeoJSON layer
+        fetch('./P29-21_10.geojson')  // 群馬県の学校データ(GeoJSON)を非同期取得
+            .then((res) => res.json())
+            .then((json) => {
+                // Create a GeoJSON layer with the GeoJSON data
+                L.geoJSON(json)
+                    .bindPopup((layer) => Layer.feature.properties.P29_004)  // Show school name in popup
+                    .addTo(map);  // Add the layer to the map
+            });
+
+        // Add an Attribution to the map
+        map.attributionControl.addAttribution(
+            '<a href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P29-v2_0.html">国土数値情報 - 学校データ</a>',
+            );
+    </script>
+</body>
+</html>
