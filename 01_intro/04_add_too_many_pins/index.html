@@ -47,13 +47,13 @@
         map.addLayer(backgroudlayer);
 
         // Make GeoJSON layer on Leaflet.markercluster
-        fetch('./P29-21.geojson')  // 群馬県の学校データ(GeoJSON)を非同期取得
+        fetch('./P29-21.geojson')  // 全国の学校データ(GeoJSON)を非同期取得（件数：57,230）
             .then((res) => res.json())
             .then((json) => {
                 // Create a GeoJSON layer with the GeoJSON data
                 const markers = L.markerClusterGroup()
                     .bindPopup(
-                        (layer) => Layer.feature.properties.P29_004, 
+                        (layer) => layer.feature.properties.P29_004, 
                         )  // Show school name in popup
                     .addTo(map);
                 L.geoJSON(json).addTo(markers);  // Set GeoJSON data to clustering layer

@@ -42,7 +42,7 @@
             .then((json) => {
                 // Create a GeoJSON layer with the GeoJSON data
                 L.geoJSON(json)
-                    .bindPopup((layer) => Layer.feature.properties.P29_004)  // Show school name in popup
+                    .bindPopup((layer) => layer.feature.properties.P29_005)  // Show school name in popup
                     .addTo(map);  // Add the layer to the map
             });
 
