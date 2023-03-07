@@ -84,7 +84,46 @@
                 // Add this layer to layers
                 layersControl.addOverlay(polygon, '人口集中地区');
             });
-        
+
+        // Colors are painted by business type code
+        const colorDict = {
+            1: 'green',
+            2: 'blue',
+            3: 'red',
+            4: 'orange',
+            5: 'purple',
+        };
+        // Scribble line thickness by business type code
+        const weightDict = {
+            1: 10,
+            2: 7,
+            3: 4,
+            4: 4,
+            5: 4,
+        };
+
+        // Reading Railways data
+        fetch('./N02-21_RailroadSection.geojson')
+                .then((res) => res.json())
+                .then((json) => {
+                    // Make GeoJSON layer
+                    const line = L.geoJSON(json, {
+                        style: (feature) => ({
+                            weight: weightDict[feature.properties.N02_002],
+                            color: colorDict[feature.properties.N02_002],
+                        }),
+                    })
+                        // Popup displays operator name and route name
+                        .bindPopup(
+                            (layer) =>
+                                layer.feature.properties.N02_004 +
+                                '<br />' +
+                                layer.feature.properties.N02_003,
+                        )
+                        .addTo(map);
+                    // Add this layer to layers
+                    layersControl.addOverlay(line, '鉄道データ');
+                });
         // Add an Attribution to the map
         map.attributionControl.addAttribution(
             '<a href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_0.html">国土数値情報 - 鉄道データ</a>',
