@@ -47,7 +47,7 @@
         map.addLayer(backgroudlayer);
 
         // Make GeoJSON layer on Leaflet.markercluster
-        fetch('./P29-21.geojson')  // 全国の学校データ(GeoJSON)を非同期取得（件数：57,230）
+        fetch('./P29-21.geojson')  // 全国の学校データ(GeoJSON)を非同期取得（件数：57230）
             .then((res) => res.json())
             .then((json) => {
                 // Create a GeoJSON layer with the GeoJSON data
