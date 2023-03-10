@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>06-02_MapLibreで多数の図形の追加</title>
+    <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet"/>
+</head>
+<body>
+    <div id="map" style="height: 99vh"></div>
+    <script>
+        // Tile URL must be a full path starting from http, so get http~/index.html up to http://~~.
+        const path = location.href.replace('/index.html', '');
+        // Vector tiles relative to this file in `. /tiles` directory relative to this file.
+        const vectortileUrl = `${path}/tiles/{z}/{x}/{y}.pbf`;
+
+        const map = new maplibregl.Map({
+           contaner: 'map',
+           center: [137.1, 36.5],
+           zoom: 4,
+           style: {
+               version: 8,
+               sources: {
+                    gsi: {
+                        type: 'raster',
+                        tiles: [
+                            'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
+                        ],
+                        tileSize: 256,  // Tile size in pixels, default is 512
+                        maxzoom: 19,
+                        attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>',
+                    },
+                    admin: {
+                        type: 'vector',  // Vector tiles
+                        tiles: [vectortileUrl],
+                        maxzoom: 8,
+                    },
+               },
+               layers: [
+                    {
+                        id: 'gsi-layer',
+                        source: 'gsi',
+                        type: 'raster',
+                    },
+                    {
+                        id: 'admin-layer',
+                        source: 'admin',
+                        'source-layer': 'admin',  // Specify the layer name in a vector tile
+                        type: 'fill',
+                        paint: {
+                            'fill-color': '#fa0',
+                            'fill-opacity': 0.5,
+                            'fill-outline-color': '#00f',
+                        },
+                    },
+               ],
+           },
+        });
+    </script>
+</body>
+</html>
