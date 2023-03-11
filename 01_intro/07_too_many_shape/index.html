@@ -56,6 +56,20 @@
                ],
            },
         });
+
+        // Process to obtain information on geographic features at the click point
+        map.on('click', (e) => {
+            // get all the feature at the click point from "admin-layer"
+            const features = map.queryRenderedFeatures(e.point, {
+               layers: ['admin-layer'], 
+            });
+            if (features.length === 0) return;  // If no features at the click point, process is finished.
+
+            const feature = features[0];
+            alert(
+                `${feature.properties.N03_002}: ${feature.properties.N03_001}${feature.properties.N03_004}`,  // City code: prefecture name + city name
+            );
+        });
     </script>
 </body>
 </html>
