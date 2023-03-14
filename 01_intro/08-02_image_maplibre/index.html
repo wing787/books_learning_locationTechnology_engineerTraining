@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>08-02_MapLibreで画像の表示</title>
+    <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet"/>
+</head>
+<body>
+    <div id="map" style="height: 99vh"></div>
+    <script>
+        const map = new maplibregl.Map({
+            container: 'map',
+            center: [136.0881, 35.2406],
+            zoom: 9,
+            style: {
+                version: 8,
+                sources: {
+                    // Define using data on the map
+                    gsi: {
+                        type: 'raster',
+                        tiles: [
+                            'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
+                        ],
+                        tileSize: 256,  // Tile size in pixels, default is 512
+                        maxzoom: 19,
+                        attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>',
+                    },
+                    lakebiwa: {
+                        type: 'image',
+                        url: './lakebiwa.jpg',
+                        coordinates:[
+                            [135.596438368833077, 35.5498836025608185], // 左上緯度・経度
+                            [136.5823028110609414, 35.5498836025608185], // 右上緯度・経度
+                            [136.5823028110609414, 34.9281476305997742], // 右下緯度・経度
+                            [135.596438368833077, 34.9281476305997742], // 左下緯度・経度
+                        ],
+                    },
+                },
+                layers: [
+                        {
+                            id: 'gsi-layer',
+                            source: 'gsi',
+                            type: 'raster',
+                        },
+                        {
+                            id: 'lakebiwa-layer',
+                            source: 'lakebiwa',
+                            type: 'raster',
+                            paint: {
+                                'raster-opacity': 0.7,
+                            },
+                        },
+                    ],
+                },
+            },
+        );
+    </script>
+</body>
+</html>

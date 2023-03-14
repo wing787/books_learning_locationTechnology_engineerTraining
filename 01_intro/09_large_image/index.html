@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>09_データ量が大きい画像</title>
+    <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet"/>
+</head>
+<body>
+    <div id="map" style="height: 99vh"></div>
+    <script>
+        const rastertileUrl = `${location.href.replace('/index.html', '')}/tiles/{z}/{x}/{y}.png`;
+
+        const map = new maplibregl.Map({
+           container: 'map',
+           center: [136.0881, 35.2406],
+           zoom: 0,
+           style: {
+                version: 8,
+                sources: {
+                    // define source of make raster tiles
+                    naturalearth: {
+                        type: 'raster',
+                        tiles: [rastertileUrl],
+                        tileSize: 256,
+                        maxzoom: 5,
+                        attribution: '<a href="https://www.naturalearthdata.com/">Natural Earth</a>',
+                    },
+                },
+                layers: [
+                    // define layer of make raster tiles source
+                    {
+                        id: 'naturalearth-layer',
+                        source: 'naturalearth',
+                        type: 'raster',
+                    },
+                ],
+           },
+        });
+    </script>
+</body>
+</html>
