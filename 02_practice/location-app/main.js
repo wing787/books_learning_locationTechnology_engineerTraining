@@ -4,7 +4,7 @@ import OpacityControl from 'maplibre-gl-opacity';
 import 'maplibre-gl-opacity/dist/maplibre-gl-opacity.css';
 
 // setting opacity for hazard map
-let opacitySets = 0.8;
+let opacitySets = 0.75;
 
 const map = new maplibregl.Map({
   container: 'map',
@@ -24,6 +24,13 @@ const map = new maplibregl.Map({
                     maxzoom: 19,
                     attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>',
                 },
+                gsi_pale: {
+                    type: 'raster',
+                    tiles: ['https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png'],
+                    tileSize: 256,  // Tile size in pixels, default is 512
+                    maxzoom: 19,
+                    attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>',
+                },
                 //   source hazard map
                 hazard_flood: {
                     type: 'raster',
@@ -31,7 +38,7 @@ const map = new maplibregl.Map({
                     minzoom: 2,
                     maxzoom: 17,
                     tileSize: 256,
-                    attribution: '&copy; <a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank">ハザードマップポータルサイト</a>',
+                    attribution: '<a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank">ハザードマップポータルサイト</a>',
                 },
                 hazard_hightide: {
                     type: 'raster',
@@ -39,7 +46,7 @@ const map = new maplibregl.Map({
                     minzoom: 2,
                     maxzoom: 17,
                     tileSize: 256,
-                    attribution: '&copy; <a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank">ハザードマップポータルサイト</a>',
+                    attribution: '<a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank">ハザードマップポータルサイト</a>',
                 },
                 hazard_tsunami: {
                     type: 'raster',
@@ -47,7 +54,7 @@ const map = new maplibregl.Map({
                     minzoom: 2,
                     maxzoom: 17,
                     tileSize: 256,
-                    attribution: '&copy; <a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank">ハザードマップポータルサイト</a>',
+                    attribution: '<a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank">ハザードマップポータルサイト</a>',
                 },
                 hazard_doseki: {
                     type: 'raster',
@@ -55,7 +62,7 @@ const map = new maplibregl.Map({
                     minzoom: 2,
                     maxzoom: 17,
                     tileSize: 256,
-                    attribution: '&copy; <a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank">ハザードマップポータルサイト</a>',
+                    attribution: '<a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank">ハザードマップポータルサイト</a>',
                 },
                 hazard_kyukeisha: {
                     type: 'raster',
@@ -63,7 +70,7 @@ const map = new maplibregl.Map({
                     minzoom: 2,
                     maxzoom: 17,
                     tileSize: 256,
-                    attribution: '&copy; <a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank">ハザードマップポータルサイト</a>',
+                    attribution: '<a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank">ハザードマップポータルサイト</a>',
                 },
                 hazard_jisuberi: {
                     type: 'raster',
@@ -71,7 +78,15 @@ const map = new maplibregl.Map({
                     minzoom: 2,
                     maxzoom: 17,
                     tileSize: 256,
-                    attribution: '&copy; <a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank">ハザードマップポータルサイト</a>',
+                    attribution: '<a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank">ハザードマップポータルサイト</a>',
+                },
+                skhb: {
+                    // Vector tiles of the skhb
+                    type: 'vector',
+                    tiles: [`${location.href.replace('/index.html', '')}/skhb/{z}/{x}/{y}.pbf`,],
+                    minzoom: 5,
+                    maxzoom: 8,
+                    attribution: '<a href="https://www.gsi.go.jp/bousaichiri/hinanbasho.html" target="_blank">国土地理院:指定緊急避難場所データ</a>'
                 },
             },
         layers: [
@@ -79,8 +94,13 @@ const map = new maplibregl.Map({
                 id: 'gsi-layer',
                 source: 'gsi',
                 type: 'raster',
+                layout: { visibility: 'none'},
             },
-            
+            {
+                id: 'gsi-pale-layer',
+                source: 'gsi_pale',
+                type: 'raster',
+            },
             {
                 id: 'hazard-flood-layer',
                 source: 'hazard_flood',
@@ -122,6 +142,165 @@ const map = new maplibregl.Map({
                 paint: { 'raster-opacity': opacitySets },
                 layout: { visibility: 'none'},
             },
+            {
+                id: 'skhb-1-layer',
+                source: 'skhb',
+                'source-layer': 'skhb',
+                type: 'circle',
+                paint: {
+                    'circle-radius':[
+                        // Circle size in zoom level
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        5, 2,
+                        14, 6
+                    ],
+                    'circle-stroke-width': 0.3,
+                    'circle-stroke-color': '#ffffff',
+                },
+                filter: ['==', 'disaster1', '1'],
+            },
+            {
+                id: 'skhb-2-layer',
+                source: 'skhb',
+                'source-layer': 'skhb',
+                type: 'circle',
+                paint: {
+                    'circle-radius':[
+                        // Circle size in zoom level
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        5, 2,
+                        14, 6
+                    ],
+                    'circle-stroke-width': 0.3,
+                    'circle-stroke-color': '#ffffff',
+                },
+                filter: ['==', 'disaster2', '1'],
+                layout: { visibility: 'none'},
+            },
+            {
+                id: 'skhb-3-layer',
+                source: 'skhb',
+                'source-layer': 'skhb',
+                type: 'circle',
+                paint: {
+                    'circle-radius':[
+                        // Circle size in zoom level
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        5, 2,
+                        14, 6
+                    ],
+                    'circle-stroke-width': 0.3,
+                    'circle-stroke-color': '#ffffff',
+                },
+                filter: ['==', 'disaster3', '1'],
+                layout: { visibility: 'none'},
+            },
+            {
+                id: 'skhb-4-layer',
+                source: 'skhb',
+                'source-layer': 'skhb',
+                type: 'circle',
+                paint: {
+                    'circle-radius':[
+                        // Circle size in zoom level
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        5, 2,
+                        14, 6
+                    ],
+                    'circle-stroke-width': 0.3,
+                    'circle-stroke-color': '#ffffff',
+                },
+                filter: ['==', 'disaster4', '1'],
+                layout: { visibility: 'none'},
+            },
+            {
+                id: 'skhb-5-layer',
+                source: 'skhb',
+                'source-layer': 'skhb',
+                type: 'circle',
+                paint: {
+                    'circle-radius':[
+                        // Circle size in zoom level
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        5, 2,
+                        14, 6
+                    ],
+                    'circle-stroke-width': 0.3,
+                    'circle-stroke-color': '#ffffff',
+                },
+                filter: ['==', 'disaster5', '1'],
+                layout: { visibility: 'none'},
+            },
+            {
+                id: 'skhb-6-layer',
+                source: 'skhb',
+                'source-layer': 'skhb',
+                type: 'circle',
+                paint: {
+                    'circle-radius':[
+                        // Circle size in zoom level
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        5, 2,
+                        14, 6
+                    ],
+                    'circle-stroke-width': 0.3,
+                    'circle-stroke-color': '#ffffff',
+                },
+                filter: ['==', 'disaster6', '1'],
+                layout: { visibility: 'none'},
+            },
+            {
+                id: 'skhb-7-layer',
+                source: 'skhb',
+                'source-layer': 'skhb',
+                type: 'circle',
+                paint: {
+                    'circle-radius':[
+                        // Circle size in zoom level
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        5, 2,
+                        14, 6
+                    ],
+                    'circle-stroke-width': 0.3,
+                    'circle-stroke-color': '#ffffff',
+                },
+                filter: ['==', 'disaster7', '1'],
+                layout: { visibility: 'none'},
+            },
+            {
+                id: 'skhb-8-layer',
+                source: 'skhb',
+                'source-layer': 'skhb',
+                type: 'circle',
+                paint: {
+                    'circle-radius':[
+                        // Circle size in zoom level
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        5, 2,
+                        14, 6
+                    ],
+                    'circle-stroke-width': 0.3,
+                    'circle-stroke-color': '#ffffff',
+                },
+                filter: ['==', 'disaster8', '1'],
+                layout: { visibility: 'none'},
+            },
         ],
     },
 });
@@ -140,5 +319,107 @@ map.on('load', () => {
             'hazard-jisuberi-layer': '地すべり警戒区域',
         } 
     });
+
+    // Control the skhb-layers
+    const opacitySkhb = new OpacityControl({
+       baseLayers: {
+           'skhb-1-layer': '洪水',
+           'skhb-2-layer': '崖崩れ/土石流/地すべり',
+           'skhb-3-layer': '高潮',
+           'skhb-4-layer': '地震',
+           'skhb-5-layer': '津波',
+           'skhb-6-layer': '大規模な火事',
+           'skhb-7-layer': '内水氾濫',
+           'skhb-8-layer': '火山現象',
+       },
+    });
+
     map.addControl(opacity, 'top-left');  // can setting position as second parameter
+    map.addControl(opacitySkhb, 'top-right');
+
+    // The event to click on the map
+    map.on('click', (e) => {
+        // Check to exist the layer in the click point
+        const features = map.queryRenderedFeatures(e.point, {
+           layers: [
+               'skhb-1-layer',
+               'skhb-2-layer',
+               'skhb-3-layer',
+               'skhb-4-layer',
+               'skhb-5-layer',
+               'skhb-6-layer',
+               'skhb-7-layer',
+               'skhb-8-layer',
+           ], 
+        });
+        // if nothing features, End process
+        if (features.length == 0) return;
+
+        // if exist features, show the popup
+        const feature = features[0];  // get the first feature
+        const popup = new maplibregl.Popup()
+            .setLngLat(feature.geometry.coordinates)  // [lon, lat]
+            // 
+            .setHTML(
+                `\
+            <div style="font-weight: 900; font-size: 1rem;">${
+                feature.properties.name
+            }</div>\
+            <div>${feature.properties.address}</div>\
+            <div>\
+            <span${
+                feature.properties.disaster1 ? '' : ' style="color: #ccc;"'
+            }">洪水</span>\
+            <span${
+                feature.properties.disaster2 ? '' : ' style="color: #ccc;"'
+            }">崖崩れ/土石流/地すべり</span>\
+            <span${
+                feature.properties.disaster3 ? '' : ' style="color: #ccc;"'
+            }">高潮</span>\
+            <span${
+                feature.properties.disaster4 ? '' : ' style="color: #ccc;"'
+            }">地震</span>\
+            <span${
+                feature.properties.disaster5 ? '' : ' style="color: #ccc;"'
+            }">津波</span>\
+            <span${
+                feature.properties.disaster6 ? '' : ' style="color: #ccc;"'
+            }">大規模な火事</span>\
+            <span${
+                feature.properties.disaster7 ? '' : ' style="color: #ccc;"'
+            }">内水氾濫</span>\
+            <span${
+                feature.properties.disaster8 ? '' : ' style="color: #ccc;"'
+            }">火山現象</span>\
+            </div>`,
+            )
+            .addTo(map);
+    });
+    // The event to move cursor on the map
+    map.on('mousemove', (e) => {
+        // Check to exist the layer in the click point
+        const features = map.queryRenderedFeatures(e.point, {
+           layers: [
+               'skhb-1-layer',
+               'skhb-2-layer',
+               'skhb-3-layer',
+               'skhb-4-layer',
+               'skhb-5-layer',
+               'skhb-6-layer',
+               'skhb-7-layer',
+               'skhb-8-layer',
+           ], 
+        });
+        if (features.length > 0) {
+            // if exist features, cursor to pointer
+            map.getCanvas().style.cursor = 'pointer';
+        } else {
+            // if not exist features, cursor to default
+            map.getCanvas().style.cursor = 'default';
+        }
+    });
+    // The event to drag the map
+    map.on('drag', (e) => {
+        map.getCanvas().style.cursor = 'move';
+    });
 });
