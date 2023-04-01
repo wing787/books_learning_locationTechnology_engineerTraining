@@ -3,6 +3,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import OpacityControl from 'maplibre-gl-opacity';
 import 'maplibre-gl-opacity/dist/maplibre-gl-opacity.css';
 
+import distance from '@turf/distance';
+
 // setting opacity for hazard map
 let opacitySets = 0.75;
 
@@ -34,7 +36,7 @@ const map = new maplibregl.Map({
                 //   source hazard map
                 hazard_flood: {
                     type: 'raster',
-                    tiles: ['https://disaportaldata.gsi.go.jp/raster/01_flood_l2_shinsuishin_data/{z}/{x}/{y}.png'],
+                    tiles: ['	https://disaportaldata.gsi.go.jp/raster/01_flood_l2_shinsuishin_data/{z}/{x}/{y}.png'],
                     minzoom: 2,
                     maxzoom: 17,
                     tileSize: 256,
@@ -87,6 +89,14 @@ const map = new maplibregl.Map({
                     minzoom: 5,
                     maxzoom: 8,
                     attribution: '<a href="https://www.gsi.go.jp/bousaichiri/hinanbasho.html" target="_blank">国土地理院:指定緊急避難場所データ</a>'
+                },
+                route: {
+                    // The Line what join current position and nearest featrues
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: [],
+                    },
                 },
             },
         layers: [
@@ -301,9 +311,78 @@ const map = new maplibregl.Map({
                 filter: ['==', 'disaster8', '1'],
                 layout: { visibility: 'none'},
             },
+            {
+                // 
+                id: 'route-layer',
+                source: 'route',
+                type: 'line',
+                paint: {
+                    'line-color': '#ff0000',
+                    'line-width': 4,
+                    'line-dasharray': [5, 5],
+                    'line-width': 5,
+                },
+            },
         ],
     },
 });
+
+// The variable to store the user's location data
+let userLocation = null;
+
+// The function to get the user's location data of Maplibre GL JS
+const geolocationControl = new maplibregl.GeolocateControl({
+   trackUserLocation: true, 
+});
+map.addControl(geolocationControl, 'bottom-right');
+geolocationControl.on('geolocate', (e) => {
+    // 
+    userLocation = [e.coords.longitude, e.coords.latitude];
+});
+
+// 現時点で選択されている指定緊急避難場所レイヤー(skhb)を特定しそのfilter条件を返す
+const getCurrentSkhbLayerFilter = () => {
+    const style = map.getStyle();
+    const skhbLayers = style.layers.filter((layer) =>
+        // `skhb`から始まるLayerを抽出
+        layer.id.startsWith('skhb'),
+    );
+    const visibleSkhbLayers = skhbLayers.filter(
+        (layer) => layer.layout.visibility === 'visible',
+    );
+    return visibleSkhbLayers[0].filter;
+};
+
+// 経緯度を渡すと最寄りの指定緊急避難場所を返す
+const getNearestFeature = (longitude, latitude) => {
+    // 現在表示中の指定緊急避難場所のタイルデータ(=地物)を取得する
+    const currentSkhbLayerFilter = getCurrentSkhbLayerFilter();
+    const features = map.querySourceFeatures('skhb', {
+        sourceLayer: 'skhb',
+        filter: currentSkhbLayerFilter,// 表示中のレイヤーのfilter条件に合致する条件のみを抽出
+    });
+
+    // 現在地に最も近い地物を見つける
+    const nearestFeature = features.reduce((minDistFeature, feature) => {
+        const dist = distance(
+            [longitude, latitude],
+            feature.geometry.coordinates,
+        );
+        if (minDistFeature === null || minDistFeature.properties.dist > dist)
+            // 1つ目の地物、もしくは現在の地物が最寄りの場合は最寄りデータを使用
+            return {
+                ...feature,
+                properties: {
+                    ...feature.properties,
+                    dist,    
+                },
+            };
+
+        return minDistFeature;
+    }, null);
+
+    return nearestFeature;
+};
 
 // Define the event at which the map will be loaded
 map.on('load', () => {
@@ -336,6 +415,11 @@ map.on('load', () => {
 
     map.addControl(opacity, 'top-left');  // can setting position as second parameter
     map.addControl(opacitySkhb, 'top-right');
+
+    // The event to drag the map
+    map.on('drag', (e) => {
+        map.getCanvas().style.cursor = 'move';
+    });
 
     // The event to click on the map
     map.on('click', (e) => {
@@ -418,8 +502,41 @@ map.on('load', () => {
             map.getCanvas().style.cursor = 'default';
         }
     });
-    // The event to drag the map
-    map.on('drag', (e) => {
-        map.getCanvas().style.cursor = 'move';
+    
+    //
+    map.on('render', () => {
+        // If Off GeolocationControl, 
+        if (geolocationControl._watchState === 'OFF') userLocation = null;
+        
+        // 
+        if (map.getZoom() < 7 || userLocation === null) {
+            map.getSource('route').setData({
+                type: 'FeatureCollection',
+                features: [],
+            });
+            return;
+        }
+
+        // Get the nearest feature where position
+        const nearestFeature = getNearestFeature(
+            userLocation[0], 
+            userLocation[1]
+        );
+        // The GeoJSON feature of line to join with current position & nearest feature
+        const routeFeature = {
+            type: 'Feature',
+            geometry: {
+                type: 'LineString',
+                coordinates: [
+                    userLocation,
+                    nearestFeature._geometry.coordinates,
+                ],
+            },
+        };
+        // Update the geojson data of style.sources.route
+        map.getSource('route').setData({
+            type: 'FeatureCollection',
+            features: [routeFeature],
+        });
     });
 });
