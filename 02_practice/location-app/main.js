@@ -2,6 +2,7 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import OpacityControl from 'maplibre-gl-opacity';
 import 'maplibre-gl-opacity/dist/maplibre-gl-opacity.css';
+import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
 
 import distance from '@turf/distance';
 
@@ -416,6 +417,8 @@ map.on('load', () => {
     map.addControl(opacity, 'top-left');  // can setting position as second parameter
     map.addControl(opacitySkhb, 'top-right');
 
+    
+
     // The event to drag the map
     map.on('drag', (e) => {
         map.getCanvas().style.cursor = 'move';
@@ -539,4 +542,31 @@ map.on('load', () => {
             features: [routeFeature],
         });
     });
+
+    // Generate topologinc data (GSI terrain tile)
+    const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
+    // Add topologic data to the map(type=raster-dem)
+    map.addSource('terrain', gsiTerrainSource);
+
+    // Add shading chart
+    map.addLayer(
+        {
+            id: 'hillshade',
+            source: 'terrain',
+            type: 'hillshade',
+            paint: {
+                'hillshade-illumination-anchor': 'map',
+                'hillshade-exaggeration': 0.2,
+            },
+        },
+        'hazard-jisuberi-layer',
+    );
+
+    // Add 3dmap
+    map.addControl(
+        new maplibregl.TerrainControl({
+            source: 'terrain',  // The source id of type="raster-dem"
+            exaggeration: 1,
+        }),
+    );
 });
